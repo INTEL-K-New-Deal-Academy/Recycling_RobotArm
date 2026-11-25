@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: 개발 규칙 (CLAUDE.md)
+    url: https://github.com/INTEL-K-New-Deal-Academy/Recycling_RobotArm/blob/main/CLAUDE.md
+    about: 이슈를 만들기 전에 3장 Git 흐름을 확인하세요.

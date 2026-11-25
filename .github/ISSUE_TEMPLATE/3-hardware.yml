@@ -1,0 +1,47 @@
+name: 하드웨어 / 구매
+description: 부품 구매, 조립, 배선, 거치대 제작 (CLAUDE.md 3.2, 4.7)
+title: "[hw] 할 일"
+labels: ["hw"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        코드가 없는 작업은 PR 없이, 결과(사진·메모)를 이 이슈에 댓글로 남기고 닫습니다.
+        구매 건은 산 뒤 `docs/budget.md`에도 기록하세요. (예산 30만 원)
+  - type: dropdown
+    id: kind
+    attributes:
+      label: 종류
+      options:
+        - 구매
+        - 조립 / 제작
+        - 배선 / 설치
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: 무엇을, 왜
+    validations:
+      required: true
+  - type: textarea
+    id: items
+    attributes:
+      label: 구매 품목 (구매일 때)
+      description: 품목 / 수량 / 가격 / 링크
+      value: |
+        | 품목 | 수량 | 가격 | 링크 |
+        |---|---|---|---|
+        |  |  |  |  |
+  - type: input
+    id: total
+    attributes:
+      label: 예상 금액 합계 (원)
+  - type: textarea
+    id: done
+    attributes:
+      label: 완료 조건
+      value: |
+        - [ ]
+    validations:
+      required: true

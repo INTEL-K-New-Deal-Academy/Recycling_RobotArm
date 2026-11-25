@@ -1,0 +1,47 @@
+name: 버그
+description: 잘못 동작하는 코드나 로봇 동작 (CLAUDE.md 3.2)
+title: "[영역] 증상"
+labels: ["fix"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        제목 형식: `[arm] 뚜껑 잡을 때 그리퍼가 미끄러짐`
+        만든 뒤 오른쪽에서 **담당자, 마일스톤, 영역 라벨**을 지정하세요.
+  - type: textarea
+    id: symptom
+    attributes:
+      label: 증상
+      description: 무엇이 어떻게 잘못됐는지
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: 재현 방법
+      description: 실행 명령, 컵 상태(뚜껑·빨대 유무, 음료 양), 자세 등
+      value: |
+        1.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: 기대한 동작
+    validations:
+      required: true
+  - type: dropdown
+    id: frequency
+    attributes:
+      label: 얼마나 자주
+      options:
+        - 매번
+        - 가끔 (10번 중 몇 번)
+        - 한 번 봄
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: 로그 / 사진 / 영상
+      description: 에러 메시지는 붙여 넣고, 사진·영상은 첨부하거나 공유 드라이브 경로를 적어 주세요
