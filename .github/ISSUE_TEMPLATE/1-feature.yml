@@ -1,0 +1,39 @@
+name: 기능 / 작업
+description: 새 기능, 문서, 설정 등 일반 작업 (CLAUDE.md 3.2)
+title: "[영역] 할 일"
+labels: ["feat"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        제목 형식: `[arm] 빨대 집기 자세 티칭`
+        만든 뒤 오른쪽에서 **담당자 1명, 마일스톤, 영역 라벨**(`arm`/`vision`/`conveyor`/`infra`)을 꼭 지정하세요.
+        유형이 `docs`·`chore`이면 `feat` 라벨을 바꿔 주세요.
+  - type: textarea
+    id: what
+    attributes:
+      label: 무엇을
+      description: 할 일을 짧게
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: 왜
+      description: 시연 흐름의 어느 단계에 필요한지
+    validations:
+      required: true
+  - type: textarea
+    id: done
+    attributes:
+      label: 완료 조건
+      description: 끝났다고 볼 기준 (예. 빨대 10회 중 8회 이상 뽑기 성공)
+      value: |
+        - [ ]
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: 참고
+      description: 관련 이슈, 참고 코드(robot-delivery 등), 막힐 수 있는 점

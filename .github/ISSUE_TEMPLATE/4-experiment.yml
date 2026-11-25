@@ -1,0 +1,39 @@
+name: 실험 / 측정
+description: 성공률 측정, 값 튜닝, 방식 비교 (CLAUDE.md 4.5)
+title: "[영역] 무엇을 측정"
+labels: ["test"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        제목 형식: `[arm] 빨대 뽑기 성공률 측정`
+        결과는 이 이슈에 댓글로 남기고, 정리본은 `docs/experiments/`에 둡니다. 발표 자료 근거로 씁니다.
+        음료 실험은 처음엔 물로, Pi·배선은 멀리 두고 하세요.
+  - type: textarea
+    id: goal
+    attributes:
+      label: 알고 싶은 것
+      description: 이 실험으로 무엇을 결정하려는지
+    validations:
+      required: true
+  - type: textarea
+    id: method
+    attributes:
+      label: 방법과 조건
+      description: 시도 횟수, 컵 종류·크기, 음료 양, 조명, 사용한 설정값
+    validations:
+      required: true
+  - type: textarea
+    id: result
+    attributes:
+      label: 결과
+      description: 실험 후 채우기 (예. 10회 중 8회 성공, 실패 원인)
+      value: |
+        | 조건 | 시도 | 성공 | 메모 |
+        |---|---|---|---|
+        |  |  |  |  |
+  - type: textarea
+    id: decision
+    attributes:
+      label: 결론 / 다음 할 일
+      description: 실험 후 채우기
