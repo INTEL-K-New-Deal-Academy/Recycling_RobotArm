@@ -1,0 +1,26 @@
+# 리뷰어 지정 (CLAUDE.md 2절, 3.5절)
+# - 모든 PR의 리뷰어는 C(@yooneerum)
+# - C 자신의 PR은 D(@5Color, 승준)가 승인 (자기 PR은 자기가 승인할 수 없음)
+# - 폴더 주인도 함께 적어 둔다. 아래쪽 규칙이 위쪽보다 우선한다.
+
+# 기본 (공용 문서 포함)
+*               @yooneerum @5Color
+
+# C — 팀장 / 통합
+/interfaces/    @yooneerum @5Color
+/main/          @yooneerum @5Color
+/panel/         @yooneerum @5Color
+
+# A — 로봇팔 제어
+/arm/           @yooneerum @ye2un96-tech
+
+# B — 컨베이어·기구
+/conveyor/      @yooneerum @ijaesang807-tech
+
+# D — AI 비전, Docker
+/vision/        @yooneerum @5Color
+/docker/        @yooneerum @5Color
+
+# 팀 공동 지침과 GitHub 설정
+/CLAUDE.md      @yooneerum @5Color
+/.github/       @yooneerum @5Color
