@@ -1,4 +1,4 @@
-"""DTRA 시각 백본(ResNet-18 L1-L3 + GAP/2x2/4x4/DoG)을 ONNX opset 17로 내보내고 검증한다."""
+"""DTRA 시각 백본(ResNet-18 GAP + L3 DoG)을 ONNX opset 17로 내보내고 검증한다."""
 
 from __future__ import annotations
 
@@ -29,38 +29,29 @@ def export_visual_encoder_onnx(
 
     enc = (encoder if encoder is not None else DTRAVisualEncoder(pretrained=pretrained)).eval()
     dummy_main = torch.randn(1, 3, input_size, input_size, dtype=torch.float32)
-    dummy_wrist = torch.randn(1, 3, input_size, input_size, dtype=torch.float32)
 
     with torch.no_grad():
-        pt_vis1, pt_vis2 = enc(dummy_main, dummy_wrist)
+        pt_gap, pt_cmc = enc(dummy_main)
 
     export_kwargs = dict(
         export_params=True,
         opset_version=opset,
         do_constant_folding=True,
-        input_names=["img_main", "img_wrist"],
-        output_names=["vis_stage1", "vis_stage2"],
+        input_names=["img_main"],
+        output_names=["vis_gap", "vis_cmc"],
     )
     if "dynamo" in inspect.signature(torch.onnx.export).parameters:
         export_kwargs["dynamo"] = False
 
-    torch.onnx.export(
-        enc,
-        (dummy_main, dummy_wrist),
-        str(out),
-        **export_kwargs,
-    )
+    torch.onnx.export(enc, (dummy_main,), str(out), **export_kwargs)
 
     model = onnx.load(str(out))
     onnx.checker.check_model(model)
 
     sess = ort.InferenceSession(str(out), providers=["CPUExecutionProvider"])
-    ort_vis1, ort_vis2 = sess.run(
-        None,
-        {"img_main": dummy_main.numpy(), "img_wrist": dummy_wrist.numpy()},
-    )
-    diff1 = float(np.max(np.abs(pt_vis1.numpy() - ort_vis1)))
-    diff2 = float(np.max(np.abs(pt_vis2.numpy() - ort_vis2)))
+    ort_gap, ort_cmc = sess.run(None, {"img_main": dummy_main.numpy()})
+    diff1 = float(np.max(np.abs(pt_gap.numpy() - ort_gap)))
+    diff2 = float(np.max(np.abs(pt_cmc.numpy() - ort_cmc)))
     return max(diff1, diff2)
 
 
@@ -82,7 +73,10 @@ def main() -> None:
         opset=int(model_cfg["onnx_opset"]),
         pretrained=(not args.no_pretrained) and bool(model_cfg["pretrained_backbone"]),
     )
-    print(f"ONNX 저장 완료: {out_path} (opset={model_cfg['onnx_opset']}, max_abs_diff={max_diff:.6e})")
+    size_mb = Path(out_path).stat().st_size / (1024 * 1024)
+    print(
+        f"ONNX 저장 완료: {out_path} ({size_mb:.2f} MB, opset={model_cfg['onnx_opset']}, max_abs_diff={max_diff:.6e})"
+    )
 
 
 if __name__ == "__main__":

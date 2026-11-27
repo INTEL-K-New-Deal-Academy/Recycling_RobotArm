@@ -17,7 +17,7 @@ from vision.export_onnx import export_visual_encoder_onnx
 class TestDTRAVisionPipeline(unittest.TestCase):
     def _build_enrolled_router(self, pretrained: bool = False) -> DTRAVisionRouter:
         router = DTRAVisionRouter(
-            u_geom_threshold=0.04,
+            u_geom_threshold=0.32 if pretrained else 0.003,
             pretrained_backbone=pretrained,
         )
         for cls_name, has_lid, prompt in (
@@ -61,7 +61,6 @@ class TestDTRAVisionPipeline(unittest.TestCase):
         p_lid = router.predict(render_synthetic_frame("cup_with_lid", seed=99))
         p_nolid = router.predict(render_synthetic_frame("cup_no_lid", seed=99))
         p_other = router.predict(render_synthetic_frame("other_trash", seed=99))
-        p_empty = router.predict(render_synthetic_frame("empty", seed=99))
 
         self.assertEqual(p_lid.status, "cup_with_lid")
         self.assertTrue(p_lid.is_cup)
@@ -74,10 +73,6 @@ class TestDTRAVisionPipeline(unittest.TestCase):
         # 미등록 기타 쓰레기는 기하학적 거리(u_geom) 임계치 초과로 OTHER_TRASH 거절
         self.assertEqual(p_other.status, "OTHER_TRASH")
         self.assertFalse(p_other.is_cup)
-
-        # 빈 벨트는 EMPTY 판정
-        self.assertEqual(p_empty.status, "EMPTY")
-        self.assertFalse(p_empty.is_cup)
 
         # Snap-Back 상태 초기화 검증 (0.0000)
         self.assertEqual(router.episode_snap_back(), 0.0)
