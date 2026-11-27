@@ -217,3 +217,27 @@ class FakeCameraSource(CameraSource):
 
     def release(self) -> None:
         return None
+
+
+class VideoFileCameraSource(CameraSource):
+    """저장된 동영상(.mp4/.avi)을 카메라처럼 순차 재생하는 입력 소스."""
+
+    def __init__(self, video_path: str | Path, loop: bool = False) -> None:
+        self.path = Path(video_path)
+        self.loop = loop
+        self.cap = cv2.VideoCapture(str(self.path))
+        if not self.cap.isOpened():
+            raise RuntimeError(f"동영상 파일을 열 수 없습니다: {self.path}")
+        self.fps = float(self.cap.get(cv2.CAP_PROP_FPS) or 30.0)
+
+    def read(self) -> Tuple[bool, Optional[np.ndarray]]:
+        ok, frame = self.cap.read()
+        if (not ok or frame is None) and self.loop:
+            self.cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
+            ok, frame = self.cap.read()
+        if not ok or frame is None:
+            return False, None
+        return True, frame
+
+    def release(self) -> None:
+        self.cap.release()

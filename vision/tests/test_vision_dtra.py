@@ -9,9 +9,10 @@ from pathlib import Path
 import numpy as np
 import torch
 
-from vision.camera import FakeCameraSource, render_synthetic_frame
+from vision.camera import FakeCameraSource, VideoFileCameraSource, render_synthetic_frame
 from vision.dtra_adapter import DTRAVisionRouter
 from vision.export_onnx import export_visual_encoder_onnx
+from vision.infer import draw_prediction_overlay
 
 
 class TestDTRAVisionPipeline(unittest.TestCase):
@@ -116,6 +117,17 @@ class TestDTRAVisionPipeline(unittest.TestCase):
         cam.release()
         self.assertEqual(len(frames), 4)
         self.assertTrue(all(isinstance(f, np.ndarray) and f.shape == (480, 640, 3) for f in frames))
+
+    def test_overlay_render_does_not_mutate_input(self) -> None:
+        router = self._build_enrolled_router(pretrained=False)
+        frame = render_synthetic_frame("cup_with_lid", seed=55)
+        frame_orig = frame.copy()
+        pred = router.predict(frame)
+        vis = draw_prediction_overlay(frame, pred, u_geom_threshold=router.u_geom_threshold)
+        self.assertEqual(vis.shape, frame.shape)
+        self.assertTrue(np.array_equal(frame, frame_orig))
+        self.assertFalse(np.array_equal(vis, frame))
+        self.assertIsNotNone(VideoFileCameraSource)
 
 
 if __name__ == "__main__":
