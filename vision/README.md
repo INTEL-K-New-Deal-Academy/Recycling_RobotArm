@@ -10,6 +10,13 @@
 | CAM 2 로봇팔 카메라 (`icSpring`) | 컵 위치·자세, 로봇팔 기준 좌표 |
 | CAM 3 작업 위치 카메라 | 컵 도착 감지 및 음료 컵/기타 쓰레기 판별 |
 
+## 모델 요약
+
+- 고정된 ResNet 백본 + 물체별 기억 슬롯. 샘플 몇 장과 자연어 라벨로 등록하고, 등록이 끝난 슬롯은 잠근다.
+- 배경·조명을 빼고 윤곽선 유사도로 판별: 기준선 안 → 음료 컵(뚜껑 유/무, 집을 위치), 밖 → 기타 쓰레기(통과).
+- 컵 하나가 끝날 때마다 상태 초기화. 로봇팔 궤적도 B-spline으로 생성 가능.
+- 자세한 설명은 [README 5절](../README.md#ai-비전-모델--dtra-v31).
+
 ## 1. 설치 및 서브모듈 받기
 
 ```bash
@@ -42,5 +49,9 @@ python -m vision.infer --onnx vision/models/dtra_visual_encoder_opset17.onnx --f
 # 4) 단위 테스트 실행
 python -m unittest discover -s vision/tests -v
 ```
+
+## 남은 실기 할 일
+- 실제 벨트·컵 샘플 촬영 및 기준선(`u_geom_threshold`) 실측 조정
+- 이 프로젝트 환경에서 정확도·처리 시간 측정 (`test` 이슈로 `docs/experiments/` 기록)
 
 > 학습 데이터·실패 사진·대용량 `.onnx` / `.npz` 파일은 Git에 올리지 않고 팀 공유 드라이브에 보관합니다.
