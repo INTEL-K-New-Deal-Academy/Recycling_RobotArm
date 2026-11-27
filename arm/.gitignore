@@ -1,0 +1,5 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+# 녹화 데이터는 팀 공유 드라이브에 (CLAUDE.md 4.5). 자세(data/poses.json)·캘리브레이션은 Git 에 올린다
+data/recordings/
