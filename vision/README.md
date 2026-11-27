@@ -2,16 +2,45 @@
 
 담당: **D (승준, @5Color)**
 
-카메라 3대의 영상으로 컵을 인식합니다. 모델은 [5Color/dtra](https://github.com/5Color/dtra) `v3.1.0`을 사용합니다. 모델 코드는 이 저장소에 복사하지 않고 태그로 버전을 고정해 씁니다.
+[5Color/dtra](https://github.com/5Color/dtra) `v3.1.0` 태그를 `git submodule`로 연결해 사용합니다 (`vision/third_party/dtra`, 코드 복제 없음).
 
 | 카메라 | 역할 |
 |---|---|
 | CAM 1 상단 웹캠 | 벨트 전체, 컵 위치·분포·밀집도 |
-| CAM 2 로봇팔 카메라 | 컵 위치·자세, 로봇팔 기준 좌표 |
-| CAM 3 작업 위치 카메라 | 컵 도착 감지 |
+| CAM 2 로봇팔 카메라 (`icSpring`) | 컵 위치·자세, 로봇팔 기준 좌표 |
+| CAM 3 작업 위치 카메라 | 컵 도착 감지 및 음료 컵/기타 쓰레기 판별 |
 
-## 할 일 (TBD)
-- DTRA 설치 방식 정하기 (pip 설치 / 서브모듈 등)
-- 음료 컵(뚜껑 유/무)·집을 위치 / 기타 쓰레기 판별
-- Pi 5에서 ONNX로 실행
-- 학습 데이터·사진은 Git에 올리지 않고 팀 공유 드라이브에 저장
+## 1. 설치 및 서브모듈 받기
+
+```bash
+git submodule update --init --recursive
+```
+
+> **버전 주의 (`CLAUDE.md` 5절):** Pi 5 및 Docker 환경에서는 `numpy 1.26.4`, `protobuf 3.20.3`, `onnxruntime 1.19.2`, `onnx 1.16.2 (opset 17)` 버전을 유지합니다.
+
+## 2. 모듈 구성
+
+- [dtra_adapter.py](dtra_adapter.py): `5Color/dtra@v3.1.0` 직접 참조 어댑터 (소량 등록 `No-Encroachment`, 2단계 `Top-M CMC`, `U_geom` OOD 거절, `episode_snap_back`)
+- [camera.py](camera.py): 실제 USB 카메라(`OpenCVCameraSource`) 및 하드웨어 없는 테스트용 합성 카메라(`FakeCameraSource`)
+- [enroll.py](enroll.py): 1~30장 샘플만으로 기존 슬롯을 건드리지 않고 새 물체를 등록하는 CLI
+- [infer.py](infer.py): PyTorch / ONNX Runtime 공용 실시간 추론 CLI
+- [export_onnx.py](export_onnx.py): 동결 `ResNet-18 L1-L3` + 공간 격자/`DoG` 특징 추출기를 `opset 17` ONNX로 변환 및 오차 검증
+- [config.yaml](config.yaml): 카메라 인덱스, `U_geom` 임계치 등 실측 설정값 모음
+
+## 3. 하드웨어 없이 실행하기 (`fake` 모드)
+
+```bash
+# 1) 가짜 카메라 샘플로 cup_with_lid / cup_no_lid 등록
+python -m vision.enroll --fake
+
+# 2) ONNX (opset 17) 변환 및 PyTorch vs ONNX 오차 확인
+python -m vision.export_onnx
+
+# 3) ONNX 백엔드로 가짜 카메라 추론 테스트
+python -m vision.infer --onnx vision/models/dtra_visual_encoder_opset17.onnx --fake --max-frames 4
+
+# 4) 단위 테스트 실행
+python -m unittest discover -s vision/tests -v
+```
+
+> 학습 데이터·실패 사진·대용량 `.onnx` / `.npz` 파일은 Git에 올리지 않고 팀 공유 드라이브에 보관합니다.
