@@ -1,0 +1,37 @@
+{
+  "robot": "follower",
+  "source": "LeRobot so_follower/follower.json (2026-11-06)",
+  "joints": {
+    "1": {
+      "min": 733,
+      "max": 3263,
+      "homing_offset": -1955
+    },
+    "2": {
+      "min": 827,
+      "max": 3248,
+      "homing_offset": -1174
+    },
+    "3": {
+      "min": 781,
+      "max": 3047,
+      "homing_offset": -1967
+    },
+    "4": {
+      "min": 777,
+      "max": 3131,
+      "homing_offset": -1582
+    },
+    "5": {
+      "min": 0,
+      "max": 4095,
+      "homing_offset": -1290
+    },
+    "6": {
+      "min": 3040,
+      "max": 3572,
+      "homing_offset": -1939
+    }
+  },
+  "note": "gripper min 2010->3040 (2026-11-27): jaws touch at ~3040. max 3572 = servo EEPROM limit; by hand it opens past 4095 seam (~4580)."
+}
