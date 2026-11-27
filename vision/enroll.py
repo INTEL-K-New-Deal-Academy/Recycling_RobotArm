@@ -2,7 +2,8 @@
 
 사용 예:
   python -m vision.enroll --fake --out vision/weights/dtra_bank.npz
-  python -m vision.enroll --label cup_with_lid --frames-dir path/to/frames --out vision/weights/dtra_bank.npz
+  python -m vision.enroll --label lid_clear_straw --has-lid --video raw_data/20261127_094718.mp4
+  python -m vision.enroll --label cup_with_lid --frames-dir path/to/frames
 """
 
 from __future__ import annotations
@@ -36,13 +37,35 @@ def collect_frames_from_dir(frames_dir: Path, limit: int) -> List[np.ndarray]:
     return frames
 
 
+def collect_frames_from_video(video_path: Path, limit: int) -> List[np.ndarray]:
+    cap = cv2.VideoCapture(str(video_path))
+    if not cap.isOpened():
+        raise RuntimeError(f"영상을 열 수 없습니다: {video_path}")
+    total = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    idxs = np.linspace(0, max(0, total - 1), max(1, limit), dtype=int)
+    frames = []
+    try:
+        for i in idxs:
+            cap.set(cv2.CAP_PROP_POS_FRAMES, int(i))
+            ok, frame = cap.read()
+            if ok and frame is not None:
+                frames.append(frame)
+    finally:
+        cap.release()
+    return frames
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description="DTRA 소량 샘플 슬롯 등록 CLI")
     ap.add_argument("--config", default="vision/config.yaml")
     ap.add_argument("--out", default="", help="저장할 .npz 경로 (기본값: config.yaml)")
     ap.add_argument("--label", default="", help="등록할 클래스 이름")
     ap.add_argument("--prompt", default="", help="선택적 자연어 설명")
+    ap.add_argument("--has-lid", action="store_true", help="뚜껑 있음 여부 지정")
+    ap.add_argument("--no-lid", action="store_true", help="뚜껑 없음 여부 지정")
+    ap.add_argument("--not-cup", action="store_true", help="기타/EMPTY 슬롯 등록 시 지정")
     ap.add_argument("--frames-dir", default="", help="샘플 이미지 폴더")
+    ap.add_argument("--video", default="", help="샘플 동영상(.mp4) 경로")
     ap.add_argument("--camera-index", type=int, default=-1, help="실제 웹캠에서 바로 수집할 인덱스")
     ap.add_argument("--num-frames", type=int, default=12)
     ap.add_argument("--fake", action="store_true", help="하드웨어 없이 합성 컵 샘플로 등록")
@@ -55,7 +78,7 @@ def main() -> None:
     out_path = Path(args.out or model_cfg["bank_path"])
 
     router = DTRAVisionRouter(
-        d_topo=int(model_cfg["d_topo"]),
+        d_feat=int(model_cfg["d_feat"]),
         d_lang=int(model_cfg["d_lang"]),
         seed=int(model_cfg["seed"]),
         input_size=int(model_cfg["input_size"]),
@@ -84,7 +107,9 @@ def main() -> None:
     else:
         if not args.label:
             raise SystemExit("--fake 가 아니면 --label 을 반드시 지정해야 합니다.")
-        if args.frames_dir:
+        if args.video:
+            frames = collect_frames_from_video(Path(args.video), args.num_frames)
+        elif args.frames_dir:
             frames = collect_frames_from_dir(Path(args.frames_dir), args.num_frames)
         elif args.camera_index >= 0:
             cam = OpenCVCameraSource(index=args.camera_index)
@@ -97,15 +122,17 @@ def main() -> None:
             finally:
                 cam.release()
         else:
-            raise SystemExit("--frames-dir 또는 --camera-index 중 하나를 지정하세요.")
+            raise SystemExit("--video, --frames-dir, --camera-index 중 하나를 지정하세요.")
 
         cls_meta = cfg["classes"].get(args.label, {})
+        has_lid = True if args.has_lid else (False if args.no_lid else cls_meta.get("has_lid"))
+        is_cup = False if args.not_cup else bool(cls_meta.get("is_cup", True))
         stat = router.enroll_class(
             label=args.label,
             frames_bgr=frames,
             prompt=args.prompt or cls_meta.get("prompt", ""),
-            is_cup=bool(cls_meta.get("is_cup", True)),
-            has_lid=cls_meta.get("has_lid"),
+            is_cup=is_cup,
+            has_lid=has_lid,
         )
         print("[ENROLL]", stat)
 

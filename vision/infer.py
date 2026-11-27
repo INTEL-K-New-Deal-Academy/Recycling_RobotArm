@@ -41,7 +41,7 @@ def main() -> None:
         )
 
     router = DTRAVisionRouter(
-        d_topo=int(model_cfg["d_topo"]),
+        d_feat=int(model_cfg["d_feat"]),
         d_lang=int(model_cfg["d_lang"]),
         seed=int(model_cfg["seed"]),
         input_size=int(model_cfg["input_size"]),

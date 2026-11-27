@@ -20,20 +20,23 @@ git submodule update --init --recursive
 
 ## 2. 모듈 구성
 
-- [dtra_adapter.py](dtra_adapter.py): `5Color/dtra@v3.1.0` 직접 참조 어댑터 (소량 등록 `No-Encroachment`, 2단계 `Top-M CMC`, `U_geom` OOD 거절, `episode_snap_back`)
+- [dtra_adapter.py](dtra_adapter.py): `5Color/dtra@v3.1.0` 직접 참조 어댑터 (동결 `ResNet-18 GAP` 특징, 소량 등록 `No-Encroachment`, 슬롯당 `<=96` 대표 벡터 매칭, `U_geom` OOD 거절, `episode_snap_back`)
 - [camera.py](camera.py): 실제 USB 카메라(`OpenCVCameraSource`) 및 하드웨어 없는 테스트용 합성 카메라(`FakeCameraSource`)
-- [enroll.py](enroll.py): 1~30장 샘플만으로 기존 슬롯을 건드리지 않고 새 물체를 등록하는 CLI
+- [enroll.py](enroll.py): 1~30장 샘플(동영상/폴더/웹캠/fake)만으로 기존 슬롯을 건드리지 않고 새 물체를 등록하는 CLI
 - [infer.py](infer.py): PyTorch / ONNX Runtime 공용 실시간 추론 CLI
-- [export_onnx.py](export_onnx.py): 동결 `ResNet-18 L1-L3` + 공간 격자/`DoG` 특징 추출기를 `opset 17` ONNX로 변환 및 오차 검증
+- [export_onnx.py](export_onnx.py): `ResNet-18 GAP` 특징 추출기를 `opset 17` ONNX로 변환 및 오차 검증
 - [config.yaml](config.yaml): 카메라 인덱스, `U_geom` 임계치 등 실측 설정값 모음
 
-## 3. 하드웨어 없이 실행하기 (`fake` 모드)
+## 3. 실행 방법
 
 ```bash
 # 1) 가짜 카메라 샘플로 cup_with_lid / cup_no_lid 등록
 python -m vision.enroll --fake
 
-# 2) ONNX (opset 17) 변환 및 PyTorch vs ONNX 오차 확인
+# 1-1) 실제 촬영 동영상(.mp4)에서 12프레임만 뽑아 슬롯 등록할 때
+python -m vision.enroll --label lid_clear_straw --has-lid --video raw_data/영상.mp4
+
+# 2) ONNX (opset 17) 변환 및 PyTorch vs ONNX 오차·용량 확인
 python -m vision.export_onnx
 
 # 3) ONNX 백엔드로 가짜 카메라 추론 테스트
@@ -43,4 +46,4 @@ python -m vision.infer --onnx vision/models/dtra_visual_encoder_opset17.onnx --f
 python -m unittest discover -s vision/tests -v
 ```
 
-> 학습 데이터·실패 사진·대용량 `.onnx` / `.npz` 파일은 Git에 올리지 않고 팀 공유 드라이브에 보관합니다.
+> 학습 데이터·실패 사진·영상(`raw_data/`)·대용량 `.onnx` / `.npz` 파일은 Git에 올리지 않고 팀 공유 드라이브에 보관합니다.

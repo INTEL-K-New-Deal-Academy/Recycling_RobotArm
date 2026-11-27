@@ -12,7 +12,7 @@ camera:
 model:
   dtra_tag: "v3.1.0"
   input_size: 128
-  d_topo: 64
+  d_feat: 512
   d_lang: 128
   seed: 42
   pretrained_backbone: true
@@ -21,11 +21,12 @@ model:
   onnx_opset: 17
 
 routing:
-  # 기하학적 OOD 거절 기준: u_geom = 1.0 - combined_sim (사전학습 ResNet-18 기준 정상컵 ~0.004, 미등록 ~0.13+)
-  # TODO: 실기 확인 필요 (실제 벨트 조명/컵 샘플로 재조정)
-  u_geom_threshold: 0.08
+  # 기하학적 OOD 거절 기준: u_geom = 1.0 - max_cos
+  # 실제 영상 실측(ResNet-18 GAP, 128x128): 컵 0.06~0.30 / 빈 배경 0.45 -> 기본 기준선 0.32
+  # TODO: 실기 확인 필요 (실제 컨베이어 벨트 조명에서 재측정)
+  u_geom_threshold: 0.32
   top_m: 5
-  cmc_margin_thresh: 0.12
+  cmc_margin_thresh: 0.05
   persistence_frames: 2
 
 classes:
