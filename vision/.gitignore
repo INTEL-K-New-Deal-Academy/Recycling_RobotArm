@@ -1,6 +1,8 @@
-# 대용량 모델/가중치/이미지 데이터는 Git에 올리지 않음 (CLAUDE.md 4.5)
+# 대용량 원본 이미지/동영상 및 임시 테스트 파일은 Git에 올리지 않음 (CLAUDE.md 4.5)
 models/*.onnx
+!models/dtra_visual_encoder_opset17.onnx
 weights/*.npz
+!weights/dtra_bank.npz
 data/
 __pycache__/
 *.pyc
