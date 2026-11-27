@@ -1,0 +1,39 @@
+# DTRA v3.1 비전 설정 (실측값 모음 - CLAUDE.md 4.2)
+# TODO: 실기 확인 필요 항목은 장비 도착(11/30) 후 실측값으로 교체
+
+camera:
+  # TODO: 실기 확인 필요 (Pi 5 /dev/video* 인덱스 및 해상도)
+  main_index: 0
+  wrist_index: null
+  width: 640
+  height: 480
+  exposure: "auto"
+
+model:
+  dtra_tag: "v3.1.0"
+  input_size: 128
+  d_topo: 64
+  d_lang: 128
+  seed: 42
+  pretrained_backbone: true
+  bank_path: "vision/weights/dtra_bank.npz"
+  onnx_path: "vision/models/dtra_visual_encoder_opset17.onnx"
+  onnx_opset: 17
+
+routing:
+  # 기하학적 OOD 거절 기준: u_geom = 1.0 - combined_sim (사전학습 ResNet-18 기준 정상컵 ~0.004, 미등록 ~0.13+)
+  # TODO: 실기 확인 필요 (실제 벨트 조명/컵 샘플로 재조정)
+  u_geom_threshold: 0.08
+  top_m: 5
+  cmc_margin_thresh: 0.12
+  persistence_frames: 2
+
+classes:
+  cup_with_lid:
+    prompt: "disposable beverage cup with lid"
+    is_cup: true
+    has_lid: true
+  cup_no_lid:
+    prompt: "open disposable beverage cup without lid"
+    is_cup: true
+    has_lid: false
