@@ -46,8 +46,15 @@ python -m vision.enroll --label lid_clear_straw --has-lid --video raw_data/영�
 # 2) ONNX (opset 17) 변환 및 PyTorch vs ONNX 오차·용량 확인
 python -m vision.export_onnx
 
-# 3) ONNX 백엔드로 가짜 카메라 추론 테스트
+# 3) ONNX 백엔드로 가짜 카메라 추론 테스트 (화면 띄우려면 --show 추가)
 python -m vision.infer --onnx vision/models/dtra_visual_encoder_opset17.onnx --fake --max-frames 4
+
+# 3-1) 실시간 웹캠 화면 창으로 시연하기 (q 또는 ESC 로 종료)
+python -m vision.infer --onnx vision/models/dtra_visual_encoder_opset17.onnx --camera-index 0 --show --max-frames 0
+
+# 3-2) 촬영 동영상(.mp4)으로 시연하거나 결과 영상 저장하기
+python -m vision.infer --video raw_data/영상.mp4 --show --loop --max-frames 0
+python -m vision.infer --video raw_data/영상.mp4 --save-out demo_out.mp4 --max-frames 0
 
 # 4) 단위 테스트 실행
 python -m unittest discover -s vision/tests -v
