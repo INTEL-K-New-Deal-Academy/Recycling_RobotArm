@@ -36,27 +36,27 @@ git submodule update --init --recursive
 
 ## 3. 실행 방법
 
-```bash
-# 1) 가짜 카메라 샘플로 cup_with_lid / cup_no_lid 등록
-python -m vision.enroll --fake
+저장소에 사전 등록 컵 슬롯(`vision/weights/dtra_bank.npz`, 124 KB)과 ONNX 백본(`vision/models/dtra_visual_encoder_opset17.onnx`, 42.6 MB)이 포함되어 있어 **별도 데이터 수집·학습 없이 바로 실행**할 수 있습니다.
 
-# 1-1) 실제 촬영 동영상(.mp4)에서 12프레임만 뽑아 슬롯 등록할 때
+```bash
+# 0) [가장 빠름] git pull 후 바로 실시간 웹캠 화면 창으로 시연하기 (q 또는 ESC 로 종료)
+python -m vision.infer --onnx vision/models/dtra_visual_encoder_opset17.onnx --camera-index 0 --show --max-frames 0
+
+# 1) 새 컵/물체를 추가로 등록하거나 처음부터 등록할 때
+python -m vision.enroll --fake
 python -m vision.enroll --label lid_clear_straw --has-lid --video raw_data/영상.mp4
 
-# 2) ONNX (opset 17) 변환 및 PyTorch vs ONNX 오차·용량 확인
+# 2) ONNX (opset 17) 재변환 및 PyTorch vs ONNX 오차·용량 확인
 python -m vision.export_onnx
 
 # 3) ONNX 백엔드로 가짜 카메라 추론 테스트 (화면 띄우려면 --show 추가)
 python -m vision.infer --onnx vision/models/dtra_visual_encoder_opset17.onnx --fake --max-frames 4
 
-# 3-1) 실시간 웹캠 화면 창으로 시연하기 (q 또는 ESC 로 종료)
-python -m vision.infer --onnx vision/models/dtra_visual_encoder_opset17.onnx --camera-index 0 --show --max-frames 0
-
-# 3-2) 촬영 동영상(.mp4)으로 시연하거나 결과 영상 저장하기
+# 4) 촬영 동영상(.mp4)으로 시연하거나 결과 영상 저장하기
 python -m vision.infer --video raw_data/영상.mp4 --show --loop --max-frames 0
 python -m vision.infer --video raw_data/영상.mp4 --save-out demo_out.mp4 --max-frames 0
 
-# 4) 단위 테스트 실행
+# 5) 단위 테스트 실행
 python -m unittest discover -s vision/tests -v
 ```
 
@@ -64,4 +64,4 @@ python -m unittest discover -s vision/tests -v
 - 실제 벨트·컵 샘플 촬영 및 기준선(`u_geom_threshold`) 실측 조정
 - 이 프로젝트 환경에서 정확도·처리 시간 측정 (`test` 이슈로 `docs/experiments/` 기록)
 
-> 학습 데이터·실패 사진·영상(`raw_data/`)·대용량 `.onnx` / `.npz` 파일은 Git에 올리지 않고 팀 공유 드라이브에 보관합니다.
+> 학습 원본 데이터·실패 사진·영상(`raw_data/`)은 Git에 올리지 않고 팀 공유 드라이브에 보관합니다.
